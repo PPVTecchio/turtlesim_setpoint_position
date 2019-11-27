@@ -1,53 +1,115 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <turtlesim/Pose.h>
+#include <math.h>
+#include <iostream>
 
-
-class TurtleControl
-{
+class TurtleControl {
 private:
   ros::NodeHandle n_;
   ros::Subscriber pose_sub_;
   ros::Publisher cmd_vel_pub_;
+
+  turtlesim::Pose pose_;
+  turtlesim::Pose goal_pose_;
+
+  float tolerance_;
+  const float angular_constant_ = 1.5;
+  const float linear_constant_ = 1.5;
+
   void poseCallback(const turtlesim::Pose::ConstPtr& msg);
+  float computeEuclideanDistance(void);
+  float computeSteeringAngle(void);
+  float computeLinearVelocity(void);
+  float computeAngularVelocity(void);
+
 
 public:
   TurtleControl(/* args */);
   ~TurtleControl();
+  void move2Goal(void);
 };
 
-TurtleControl::TurtleControl(/* args */)
-{
+TurtleControl::TurtleControl(/* args */) {
   pose_sub_ = n_.subscribe<turtlesim::Pose>("turtle1/pose", 1000, &TurtleControl::poseCallback,this);
 
   cmd_vel_pub_ = n_.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1000);
 
 }
 
-TurtleControl::~TurtleControl()
-{
+TurtleControl::~TurtleControl() {
 }
 
+void TurtleControl::poseCallback(const turtlesim::Pose::ConstPtr& msg) {
 
-void TurtleControl::poseCallback(const turtlesim::Pose::ConstPtr& msg)
-{
-  ROS_INFO("I heard x: %f x: %f y: %f theta: %f lvel: %f avel: %f ",msg->x,msg->y,msg->theta,msg->linear_velocity,msg->angular_velocity);
+  pose_.x = msg->x;
+  pose_.y = msg->y;
+  pose_.theta = msg->theta;
+
+  std::cout << "Here mane!";
+
+//  ROS_INFO("I heard x: %f x: %f y: %f theta: %f lvel: %f avel: %f ",msg->x,msg->y,msg->theta,msg->linear_velocity,msg->angular_velocity);
+}
+
+float TurtleControl::computeEuclideanDistance(void) {
+  return sqrt(pow((pose_.x - goal_pose_.x),2) + pow((pose_.y - goal_pose_.y),2));
+}
+
+float TurtleControl::computeSteeringAngle(void) {
+  return atan2((goal_pose_.y - pose_.y),(goal_pose_.x - pose_.x));
+}
+
+float TurtleControl::computeLinearVelocity(void) {
+  return linear_constant_ * computeEuclideanDistance();
+}
+
+float TurtleControl::computeAngularVelocity(void) {
+  return angular_constant_ * (computeSteeringAngle() - pose_.theta);
+}
+
+void TurtleControl::move2Goal(void) {
+  ros::Rate r(10);
 
   geometry_msgs::Twist twist;
-  twist.angular.z = msg->angular_velocity * 1.5;
-  twist.linear.x = msg->linear_velocity * 1.5;
+
+  std::cout << "X: ";
+  std::cin >> goal_pose_.x;
+  std::cout << "Y: ";
+  std::cin >> goal_pose_.y;
+  std::cout << "Tolerance: ";
+  std::cin >> tolerance_;
+
+  while (ros::ok()) {
+    twist.linear.x = computeLinearVelocity();
+    twist.angular.z = computeAngularVelocity();
+
+    cmd_vel_pub_.publish(twist);
+
+    if(computeEuclideanDistance() <= tolerance_)
+      break;
+
+    ros::spinOnce();
+    r.sleep();
+  }
+  twist.linear.x = 0.0;
+  twist.linear.y = 0.0;
+  twist.linear.z = 0.0;
+
+  twist.angular.x = 0.0;
+  twist.angular.y = 0.0;
+  twist.angular.z = 0.0;
+
   cmd_vel_pub_.publish(twist);
+
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   ros::init(argc, argv, "turtle_control");
 
   TurtleControl turtle_control;
 
+  turtle_control.move2Goal();
 
-
-  ros::spin();
 
   return 0;
 }
