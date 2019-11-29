@@ -1,4 +1,6 @@
-
+/* COPYRIGHT Pedro P. V. Tecchio 2019
+ * Adapted from http://wiki.ros.org/turtlesim/Tutorials/Go%20to%20Goal
+ */
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>

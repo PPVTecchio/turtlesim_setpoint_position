@@ -1,19 +1,17 @@
 {
     "configurations": [
         {
-            "browse": {
-                "databaseFilename": "",
-                "limitSymbolsToIncludedHeaders": true
-            },
+            "name": "Linux",
             "includePath": [
-                "/opt/ros/melodic/include/**",
-                "/home/tecchio/code/catkin_ws/**"
+                "${workspaceFolder}/**",
+                "/home/tecchio/code/catkin_ws/**",
+                "/opt/ros/melodic/include/**"
             ],
-            "name": "ROS",
-            "intelliSenseMode": "gcc-x64",
+            "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
         }
     ],
     "version": 4
