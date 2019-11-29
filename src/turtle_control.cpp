@@ -28,16 +28,23 @@ class TurtleControl {
   float computeAngularVelocity(void);
 
  public:
-  TurtleControl();
+  TurtleControl(int argc, char **argv);
   ~TurtleControl();
   void move2Goal(void);
 };
 
-TurtleControl::TurtleControl() {
+TurtleControl::TurtleControl(int argc, char **argv) {
   pose_sub_ = n_.subscribe<turtlesim::Pose>("turtle1/pose", 1, &
               TurtleControl::poseCallback, this);
 
   cmd_vel_pub_ = n_.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
+
+  ROS_INFO("Hey");
+
+  if (n_.hasParam("x"))
+    n_.getParam("x",goal_pose_.x);
+  else
+    ROS_INFO("No param x");
 }
 
 TurtleControl::~TurtleControl() {
@@ -52,6 +59,9 @@ TurtleControl::~TurtleControl() {
   twist.angular.z = 0.0;
 
   cmd_vel_pub_.publish(twist);
+
+  ROS_INFO("Bye");
+  ros::shutdown();
 }
 
 void TurtleControl::poseCallback(const turtlesim::Pose::ConstPtr& msg) {
@@ -106,7 +116,7 @@ void TurtleControl::move2Goal(void) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "turtle_control");
 
-  TurtleControl turtle_control;
+  TurtleControl turtle_control(argc, argv);
 
   turtle_control.move2Goal();
 
