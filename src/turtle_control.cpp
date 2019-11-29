@@ -39,6 +39,17 @@ TurtleControl::TurtleControl() {
 }
 
 TurtleControl::~TurtleControl() {
+  geometry_msgs::Twist twist;
+
+  twist.linear.x = 0.0;
+  twist.linear.y = 0.0;
+  twist.linear.z = 0.0;
+
+  twist.angular.x = 0.0;
+  twist.angular.y = 0.0;
+  twist.angular.z = 0.0;
+
+  cmd_vel_pub_.publish(twist);
 }
 
 void TurtleControl::poseCallback(const turtlesim::Pose::ConstPtr& msg) {
@@ -88,15 +99,6 @@ void TurtleControl::move2Goal(void) {
     ros::spinOnce();
     rate.sleep();
   }
-  twist.linear.x = 0.0;
-  twist.linear.y = 0.0;
-  twist.linear.z = 0.0;
-
-  twist.angular.x = 0.0;
-  twist.angular.y = 0.0;
-  twist.angular.z = 0.0;
-
-  cmd_vel_pub_.publish(twist);
 }
 
 int main(int argc, char **argv) {
